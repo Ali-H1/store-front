@@ -25,14 +25,12 @@ const accId = computed(() => {
 const route = useRoute();
 
 type ProductState = {
-  pid: string;
-  pname: string;
-  brand: string;
+  id: number;
+  title: string;
+  collections: string;
   price: number;
-  pdesc: string;
-  thumbnail: string;
-  pic: Array<string>;
-  // pic: string;
+  images: Array<object>;
+  description: string;
 };
 
 type AddressState = {
@@ -50,12 +48,12 @@ const userStatus = store.state.userStatus;
 
 const address = ref({} as AddressState);
 
-const query =
-    "http://" + config.apiServer + ":" + config.port + "/api/address_by_id/" + addrId.value;
-axios.get(query).then((res) => {
-  const addressList = res.data.address;
-  address.value = addressList as AddressState;
-});
+// const query =
+//     "http://" + config.apiServer + ":" + config.port + "/api/address_by_id/" + addrId.value;
+// axios.get(query).then((res) => {
+//   const addressList = res.data.address;
+//   address.value = addressList as AddressState;
+// });
 
 const product = reactive({} as ProductState);
 
@@ -74,7 +72,7 @@ const addToCart = () => {
       ":" +
       config.port +
       "/api/cart/add/" +
-      product.pid +
+      product.id +
       "/" +
       accId.value +
       "/1";
@@ -84,7 +82,7 @@ const addToCart = () => {
 
 axios
     .get(
-        "http://" + config.apiServer + ":" + config.port + "/api/product/" + route.params.pid
+        "http://" + config.apiServer + ":" + config.port + "/store/products/" + route.params.pid
     )
     .then((res) => {
       // console.log(
@@ -95,21 +93,14 @@ axios
       //     "/api/product/" +
       //     route.params.pid
       // );
-      const json = res.data.product;
-      product.pid = json.pid;
-      product.pname = json.pname;
-      product.brand = json.brand;
+      const json = res.data;
+      console.log(json.images)
+      product.id = json.id;
+      product.title = json.title;
+      product.collections = json.collections;
       product.price = json.price;
-      product.pdesc = json.pdesc;
-      // product.pic =
-      //   "http://" + config.apiServer + ":" + config.port + "/api/img/" + json.pic;
-      product.pic = [];
-      json.pic.split(";").forEach((pic: string) => {
-        // console.log(pic);
-        product.pic.push(
-            "http://" + config.apiServer + ":" + config.port + "/api/img/" + pic
-        );
-      });
+      product.description = json.description;
+      product.images = json.images;
 
       // console.log(product);
     })
@@ -155,16 +146,16 @@ const editProduct = () => {
         <div>
           <!-- <img v-for="pic in product.pic" :src="pic" alt="Product" /> -->
           <!-- <img :src="product.pic" alt="" /> -->
-          <Carousel :pic="product.pic"/>
+          <Carousel :pic="product.images"/>
         </div>
         <div class="px-6 py-4">
           <h2 class="text-left text-2xl font-medium text-gray-900">
-            {{ product.pname }}, <span class="font-bold">{{ product.brand }}</span>
+            {{ product.title }}, <span class="font-bold">{{ product.collections }}</span>
             <div class="my-2 text-xl font-medium text-orange-500">
-              HK$ {{ product.price }}
+              $ {{ product.price }}
             </div>
             <div class="text-sm text-gray-500">
-              {{ product.pdesc }}
+              {{ product.description }}
             </div>
           </h2>
         </div>

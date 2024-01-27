@@ -2,7 +2,7 @@
 import {ArrowBack, ArrowForward} from "@vicons/ionicons5";
 import {defineComponent} from "vue";
 
-defineProps<{ pic: Array<string> }>();
+defineProps<{ pic: Array<object> }>();
 
 defineComponent({
   components: {
@@ -13,7 +13,7 @@ defineComponent({
 </script>
 <template>
   <n-carousel show-arrow autoplay>
-    <img v-for="p in pic" class="carousel-img h-auto" :src="p"/>
+    <img v-for="p in pic" class="carousel-img h-auto" :src="p.image"/>
     <template #arrow="{ prev, next }">
       <div class="custom-arrow">
         <button type="button" class="curtom-arrow--left" @click="prev">
@@ -63,7 +63,7 @@ defineComponent({
   height: 28px;
   margin-right: 12px;
   color: #fff;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(57, 91, 105, 0.361);
   border-width: 0;
   border-radius: 8px;
   transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -71,7 +71,7 @@ defineComponent({
 }
 
 .custom-arrow button:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(123, 123, 123, 0.303);
 }
 
 .custom-arrow button:active {
