@@ -9,9 +9,11 @@ const router = useRouter()
 const store = useStore()
 
 const username = ref("")
+const firstname = ref("")
+const email = ref("")
+const lastname = ref("")
 const password = ref("")
 const passwordVal = ref("")
-const name = ref("")
 
 
 const checkPassword = () => {
@@ -54,22 +56,25 @@ const createAccount = () => {
   if (checkPassword()) {
     if (passwordVal.value === password.value) {
       // create account
-      const query = "http://" + config.apiServer + ":" + config.port + "/api/register/"
+      const query = "http://" + config.apiServer + ":" + config.port + "/auth/users/"
       axios.post(query, {
         username: username.value,
-        password: password.value
+        password: password.value,
+        email:email.value,
+        first_name:firstname.value,
+        last_name:lastname.value
       }).then((res) => {
-        if (res.data.status === 'success') {
+        if (res.status === 201) {
           console.log(username.value + " created account")
           store.commit('chgUser', {
-            accId: res.data.uuid,
+            accId: res.data.id,
             userEmail: username.value,
-            userName: name.value,
+            userName: lastname.value,
           })
           store.commit('chgStatus', 'active')
           router.push('/address_list/create')
         } else {
-          alert(res.data.status)
+          alert([res.status,res.data])
         }
       })
     }
@@ -96,9 +101,9 @@ const createAccount = () => {
         <input type="hidden" name="remember" value="true"/>
         <div class="rounded-md shadow-sm -space-y-px">
           <div>
-            <label for="email-address" class="sr-only">username</label>
+            <label for="username" class="sr-only">username</label>
             <input
-                id="email-address"
+                id="username"
                 name="username"
                 type="username"
                 autocomplete="email"
@@ -109,14 +114,40 @@ const createAccount = () => {
             />
           </div>
           <div>
-            <label for="email-address" class="sr-only">User Name</label>
+            <label for="email-address" class="sr-only">Email</label>
             <input
-                id="user_name"
+                id="email-address"
                 name="email"
+                type="email"
+                autocomplete="email"
+                required
+                class="appearance-none rounded-none relative block w-full px-3 py-4 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="email"
+                v-model="email"
+            />
+          </div>
+
+          <div>
+            <label for="first_name" class="sr-only">Last Name</label>
+            <input
+                id="first_name"
+                name="first_name"
                 required
                 class="appearance-none rounded-none relative block w-full px-3 py-4 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="User Name"
-                v-model="name"
+                placeholder="First Name"
+                v-model="firstname"
+            />
+          </div>
+
+          <div>
+            <label for="last_name" class="sr-only">Last Name</label>
+            <input
+                id="last_name"
+                name="last_name"
+                required
+                class="appearance-none rounded-none relative block w-full px-3 py-4 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Last Name"
+                v-model="lastname"
             />
           </div>
           <div>

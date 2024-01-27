@@ -13,7 +13,7 @@ import FormData from 'form-data'
 const router = useRouter()
 const store = useStore()
 
-const name = ref("")
+const lastname = ref("")
 const brand = ref("")
 const price = ref("")
 const thumbnail = ref("")
@@ -69,7 +69,7 @@ const thumbnailChange = (event) => {
 }
 
 const createProduct = () => {
-  if (name.value === "" || brand.value === "" || price.value === "" || information.value === "" || thumbnailImage.value.name === "" || img.length == 0) {
+  if (lastname.value === "" || brand.value === "" || price.value === "" || information.value === "" || thumbnailImage.value.name === "" || img.length == 0) {
     alert("Please fill in all the fields.")
   } else {
     if (store.state.userStatus === 'vendor') {
@@ -96,7 +96,7 @@ const createProduct = () => {
       }).then(() => {
         const query = "http://" + config.apiServer + ":" + config.port + "/api/product/create"
         axios.post(query, {
-          pName: name.value,
+          pName: lastname.value,
           brand: brand.value,
           price: price.value,
           pDesc: information.value,

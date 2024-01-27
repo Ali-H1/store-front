@@ -14,7 +14,7 @@ const route = useRoute()
 const store = useStore()
 
 const pid = route.params.pid
-const name = ref("")
+const lastname = ref("")
 const brand = ref("")
 const price = ref("")
 const thumbnailURL = ref("")
@@ -75,7 +75,7 @@ const getProduct = async () => {
   const query = "http://" + config.apiServer + ":" + config.port + "/api/product/" + pid
   axios.get(query).then((res) => {
     console.log(res.data)
-    name.value = res.data.product.pname
+    lastname.value = res.data.product.pname
     brand.value = res.data.product.brand
     price.value = res.data.product.price
     information.value = res.data.product.pdesc
@@ -101,7 +101,7 @@ const getProduct = async () => {
 getProduct()
 
 const updateProduct = () => {  
-  if (name.value === "" || brand.value === "" || price.value === "" || information.value === "" || thumbnailName.value === "" || (picList.value.length === 0 && imgList.value.length === 0)) {
+  if (lastname.value === "" || brand.value === "" || price.value === "" || information.value === "" || thumbnailName.value === "" || (picList.value.length === 0 && imgList.value.length === 0)) {
     alert("Please fill in all the fields.")
    } else {
     if (store.state.userStatus === 'vendor') {
@@ -123,7 +123,7 @@ const updateProduct = () => {
 
           axios.post(query, {
             pid: pid,
-            pName: name.value,
+            pName: lastname.value,
             brand: brand.value,
             price: price.value,
             pDesc: information.value,
@@ -143,7 +143,7 @@ const updateProduct = () => {
 
         axios.post(query, {
           pid: pid,
-          pName: name.value,
+          pName: lastname.value,
           brand: brand.value,
           price: price.value,
           pDesc: information.value,
