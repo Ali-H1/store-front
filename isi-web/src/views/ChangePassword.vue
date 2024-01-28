@@ -17,22 +17,28 @@ const email = computed(() => {
 const oldPassword = ref("")
 const newPassword = ref("")
 
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
 const changePassword = () => {
   if (store.state.userStatus != 'visitor') {
     if (checkPassword()) {
-      const query = "http://" + config.apiServer + ":" + config.port + "/api/change_password/"
-      axios
-          .post(query,
+      const query = "http://" + config.apiServer + ":" + config.port + "/auth/users/set_password/"
+      axios.post(query,
               {
-                email: email.value,
-                oldPassword: oldPassword.value,
-                newPassword: newPassword.value
-              }).then((res) => {
-        if (res.data.status === 'success') {
+                current_password: oldPassword.value,
+                new_password: newPassword.value
+              },  {headers: {Authorization: getCookie("Authorization")
+            }
+          }).then((res) => {
+        if (res.data.status === 204) {
           alert(res.data.status)
           router.push('/profile')
         } else {
-          alert(res.data.status)
+          alert(res.status)
         }
       })
     }
