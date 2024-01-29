@@ -84,10 +84,10 @@ if (localStorage.getItem("cart")){
 }
 
 const sortedProducts = products.sort((a, b) => {
-  if (a.pname < b.pname) {
+  if (a.title < b.title) {
     return -1;
   }
-  if (a.pname > b.pname) {
+  if (a.title > b.title) {
     return 1;
   }
   return 0;

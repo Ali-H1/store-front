@@ -24,12 +24,16 @@ const accId = computed(() => {
 
 const route = useRoute();
 
+type image = {
+  image: string
+};
+
 type ProductState = {
   id: number;
   title: string;
   collections: string;
   price: number;
-  images: Array<object>;
+  images: Array<image>;
   description: string;
 };
 
