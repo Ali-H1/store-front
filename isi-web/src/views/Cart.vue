@@ -16,8 +16,7 @@ const userEmail = computed(() => {
 
 type ProductState = {
   pid: string;
-  pname: string;
-  brand: string;
+  title: string;
   price: number;
   pdesc: string;
   thumbnail: string;
@@ -36,7 +35,7 @@ const products = reactive([] as Array<ProductState>);
 function getCookie(name) {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(';').shift();
+  if (parts.length === 2) return parts.pop()?.split(';').shift();
 }
 /*const query_token =
     "http://" + config.apiServer + ":" + config.port + "/api/current_user";
@@ -51,42 +50,38 @@ function getCookie(name) {
         store.commit('chgStatus', 'active')
       }
   });*/
-const query =
-  "http://" + config.apiServer + ":" + config.port + "/store/carts/";
-axios.get(query, {
+if (localStorage.getItem("cart")){
+  const cartID = localStorage.getItem("cart");
+  const query =
+  "http://" + config.apiServer + ":" + config.port + "/store/carts/"+cartID+"/items/";
+  axios.get(query, {
   headers: {
-    Authorization: getCookie("Authorization") //the token is a variable which holds the token
+    Authorization: getCookie("Authorization")??"" //the token is a variable which holds the token
   }
 }).then((res) => {
-  const cartItems = res.data.results;
+  const cartItems = res.data.results.product;
   cartItems.forEach((cartItem: ProductState) => {
-    const pid = cartItem.id;
+    const pid = cartItem.pid;
     const quantity = cartItem.quantity;
     const innerQuery =
-      "http://" + config.apiServer + ":" + config.port + "/api/product/" + pid;
+    "http://" + config.apiServer + ":" + config.port + "/store/products/" + pid;
     axios.get(innerQuery).then((res) => {
-      const img =
-        "http://" +
-        config.apiServer +
-        ":" +
-        config.port +
-        "/api/img/" +
-        res.data.product.thumbnail;
+      const img = res.data.images[0].image;
       const product = {
         pid: cartItem.pid,
-        pname: cartItem.pname,
-        brand: res.data.product.brand,
+        title: cartItem.title,
         price: cartItem.price,
-        pdesc: res.data.product.pdesc,
+        pdesc: res.data.pdesc,
         thumbnail: img,
-        pic: res.data.product.pic,
+        pic: img,
         quantity: quantity,
       };
-      subtotal.value += product.price * product.quantity;
+      subtotal.value += Number((Math.floor(product.price/product.quantity) * product.quantity).toPrecision(2));
       products.push(product);
     });
   });
 });
+}
 
 const sortedProducts = products.sort((a, b) => {
   if (a.pname < b.pname) {
@@ -148,12 +143,11 @@ const removeProduct = (pid: string) => {
                       <div class="flex justify-between text-base font-medium text-gray-900">
                         <h3>
                           <router-link :to="`/product/${product.pid}`">
-                            {{ product.pname }}
+                            {{ product.title }}
                           </router-link>
                         </h3>
-                        <p class="ml-4">HK${{ product.price }}</p>
+                        <p class="ml-4">${{ product.price }}</p>
                       </div>
-                      <p class="mt-1 text-sm text-gray-500">{{ product.brand }}</p>
                     </div>
                     <div class="flex-1 flex items-end justify-between text-sm">
                       <!-- <p class="text-gray-500">Qty 1</p> -->
@@ -178,7 +172,7 @@ const removeProduct = (pid: string) => {
         <div class="py-6 px-4">
           <div class="flex justify-between text-base font-medium text-gray-900">
             <p>Subtotal</p>
-            <p>HK${{ subtotal }}</p>
+            <p>${{ subtotal }}</p>
           </div>
           <p class="mt-0.5 text-sm text-gray-500">
             Shipping and taxes calculated at checkout.

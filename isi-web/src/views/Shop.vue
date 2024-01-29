@@ -10,7 +10,6 @@ import { useRouter } from "vue-router"
 
 const store = useStore();
 const router = useRouter();
-
 const userStatus = computed(() => {
   return store.state.userStatus;
 });
@@ -29,6 +28,7 @@ const productsAll = reactive([] as Array<ProductState>);
 
 const cnt = ref(10)
 const max_items = ref(10)
+const loading = ref(true)
 
 const currentPage = ref(1);
 
@@ -39,27 +39,30 @@ const brandFilter = ref("")
 // const updateCnt = () => {
 //   cnt.value = cnt.value + 4;
 // }
-function get_data(page=1, cat="", order="") {
+function get_data(page = 1, cat = "all", order = "") {
   let query = ""
   let page_q = ""
-  if (cat!="")
-  {
+  loading.value = true;
+  if (cat != "all") {
     cat = `collections_id=${cat}`
     query = "?"
   }
-  if (order !=""){
+  else {
+    cat = ""
+  }
+  if (order != "") {
     (order) ? order = `&ordering=${order}` : order = `ordering=${order}`;
     query = "?"
   }
-  if (page !=1){
+  if (page != 1) {
     (query) ? page_q = `&page=${page}` : page_q = `page=${page}`;
     query = "?"
   }
 
   //products.splice(0, products.length);
-  console.log(products,"1")
+  console.log(products, "1")
   axios
-    .get("http://" + config.apiServer + ":" + config.port + "/store/products/"+query+cat+order+page_q)
+    .get("http://" + config.apiServer + ":" + config.port + "/store/products/" + query + cat + order + page_q)
     .then((res) => {
       // console.log(res.data.product_list);
       const productList = res.data.results;
@@ -67,13 +70,19 @@ function get_data(page=1, cat="", order="") {
       console.log(res.data.count)
       productList.forEach((product: ProductState) => {
         axios
-          .get("http://" + config.apiServer + ":" + config.port + "/store/collections/" + product.collections+"/")
+          .get("http://" + config.apiServer + ":" + config.port + "/store/collections/" + product.collections + "/")
           .then((cat) => {
 
             product.collections = cat.data.title
-            product.image = "https://secure.touchnet.net/C20965_ustores/web/images/product-default-image.png"
             console.log(cat.data.title, product.collections)
           }).then(() => {
+            if (!product.images.length) {
+              product.image = "https://secure.touchnet.net/C20965_ustores/web/images/product-default-image.png"
+            }
+            else {
+              product.image = product.images[0].image;
+
+            }
 
             // product.pic =
             //     "http://" + config.apiServer + ":" + config.port + "/api/img/" + product.pic;
@@ -87,10 +96,14 @@ function get_data(page=1, cat="", order="") {
             products.push(product as ProductState);
             productsAll.push(product as ProductState);
           })
-        });
+      });
       console.log(products.targ)
+      loading.value = false
     })
-    .catch((error) => console.log(error));
+    .catch((error) => {
+      console.log(error);
+      loading.value = false
+    });
 }
 get_data();
 const chgViewingProduct = (pid) => {
@@ -120,53 +133,38 @@ const userName = computed(() => {
 const products_brands = computed(() => {
   const categories = []
   axios
-          .get("http://" + config.apiServer + ":" + config.port + "/store/collections/")
-          .then((cat) => {
-            cat.data.results.forEach((product) => {
-              categories.push(product.title)
-            })
-          })
+    .get("http://" + config.apiServer + ":" + config.port + "/store/collections/")
+    .then((cat) => {
+      cat.data.results.forEach((product) => {
+        categories.push(product.title)
+      })
+    })
   return categories;
 });
 
 const filtered_products = computed(() => {
 
-  if (brandFilter.value === "") {
-    if (sortPrice.value === "default") {
-      console.log("filtered", products)
-      return products;
-    } else if (sortPrice.value === "price") {
-      products.length=0
-      get_data(1,"","price")
-        return products;
-    } else if (sortPrice.value === "-price") {
-      products.length=0
-      get_data(1,"","-price")
-        return products;
-    }
+  if (sortPrice.value === 'price') {
+    products.length = 0
+    get_data(1, brandFilter.value, "price")
+    return products;
+  } else if (sortPrice.value === '-price') {
+    products.length = 0
+    get_data(1, brandFilter.value, "-price")
+    return products;
   } else {
-    if (sortPrice.value === 'price') {
-      products.length=0
-      get_data(1,brandFilter.value,"price")
-        return products;
-    } else if (sortPrice.value === '-price') {
-      products.length=0
-      get_data(1,brandFilter.value,"-price")
-        return products;
-    } else {
-      products.length=0
-      get_data(1,brandFilter.value)
-        return products;
-    }
+    products.length = 0
+    get_data(1, brandFilter.value)
+    return products;
   }
 });
 
 const maxPage = computed(() => {
   if (Math.ceil(max_items.value / cnt.value) === 0) {
-    console.log(Math.ceil(max_items.value / cnt.value),"return 1")
+    console.log(Math.ceil(max_items.value / cnt.value), "return 1")
     return 1
   } else {
-    console.log(Math.ceil(max_items.value / cnt.value),"return actual size")
+    console.log(Math.ceil(max_items.value / cnt.value), "return actual size")
     return Math.ceil(max_items.value / cnt.value);
   }
 });
@@ -270,9 +268,9 @@ const selectBrand = (selBrand) => {
                 @click="brandFilter = 'all'; initPage()">All</button>
               <div v-for="(selBrand, index) in products_brands">
                 <button type="button" class="bg-gray-700 text-sm text-white rounded-xl block p-2 col-span-1 m-1"
-                  v-if="selBrand === brandFilter" @click="selectBrand(index+1)">{{ selBrand }}</button>
+                  v-if="selBrand === brandFilter" @click="selectBrand(index + 1)">{{ selBrand }}</button>
                 <button type="button" class="text-sm hover:font-bold rounded-xl block p-2 col-span-1 m-1" v-else
-                  @click="selectBrand(index+1)">{{ selBrand }}</button>
+                  @click="selectBrand(index + 1)">{{ selBrand }}</button>
 
               </div>
             </div>
@@ -282,8 +280,8 @@ const selectBrand = (selBrand) => {
       <!--      <div class="grid grid-cols-1 gap-3 lg:grid-cols-3 lg:ml-8">-->
       <div v-if="displayed_products.length >= 3" class="ml-4" style="display: flex;flex-wrap: wrap;">
         <div v-for="product in displayed_products"
-          class="break-inside-avoid hover:shadow-2xl max-w-md bg-white border rounded-lg grid-cols-1 shadow-sm mr-2 mb-2" style="max-width: 23%;"
-          @click="
+          class="break-inside-avoid hover:shadow-2xl max-w-md bg-white border rounded-lg grid-cols-1 shadow-sm mr-2 mb-2"
+          style="max-width: 23%;" @click="
             $router.push('/product/' + product.id);
           chgViewingProduct(product.id);
           ">
@@ -296,7 +294,7 @@ const selectBrand = (selBrand) => {
             </h3>
             <h3 class="text-sm font-semibold tracking-tight text-gray-500">
               <!-- {{ product.pdesc.split(" ").slice(0, 8).join(" ") }} -->
-              {{product.description}}
+              {{ product.description }}
             </h3>
             <div class="flex items-center mt-2.5 mb-5">
               <span class="bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">{{
@@ -310,7 +308,7 @@ const selectBrand = (selBrand) => {
         <div v-if="1" class="w-full lg:col-span-1 mt-7">
           <div class="bg-black p-2 bg-white rounded-lg text-white rounded-b-none shadow">
             Page {{ currentPage }}
-             of {{ maxPage }}
+            of {{ maxPage }}
           </div>
           <div class="p-2 bg-white rounded-lg shadow rounded-t-none">
             <div class="text-lg text-left">
@@ -343,7 +341,7 @@ const selectBrand = (selBrand) => {
               {{ product.title }}
             </h3>
             <h3 class="text-sm font-semibold tracking-tight text-gray-500">
-              {{product.description}}
+              {{ product.description }}
             </h3>
             <div class="flex items-center mt-2.5 mb-5">
               <span class="bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">{{
@@ -353,9 +351,9 @@ const selectBrand = (selBrand) => {
               <span class="font-bold text-gray-700 text-md">${{ product.price }}</span>
             </div>
           </div>
-          <div v-if=" 1" class="w-full mt-7 lg:col-span-1">
+          <div v-if="1" class="w-full mt-7 lg:col-span-1">
             <div class="bg-black p-2 bg-white rounded-lg text-white rounded-b-none shadow">
-              Page {{ currentPage }} 
+              Page {{ currentPage }}
               of {{ maxPage }}
             </div>
             <div class="p-2 bg-white rounded-lg shadow rounded-t-none">
@@ -371,13 +369,15 @@ const selectBrand = (selBrand) => {
                   class="hover:bg-slate-100 hover:shadow-none border text-blue-500 h-14 rounded h-6 shadow">Next</button>
               </div>
             </div>
-  
+
           </div>
         </div>
       </div>
-      <div v-if="displayed_products.length === 0" style="width: 100%;">
+      <div v-if="loading || products.length === 0" style="width: 100%;">
         <div class="wrap">
-          <div class="spinner"></div>
+          <div v-if="loading" class="spinner"></div>
+          <h2 v-else="products.length === 0 "> Nothing Found :( </h2>
+
 
         </div>
       </div>

@@ -20,8 +20,9 @@ const newPassword = ref("")
 function getCookie(name) {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(';').shift();
-}
+
+    if (parts.length === 2) return parts.pop()?.split(';').shift();
+  }
 
 const changePassword = () => {
   if (store.state.userStatus != 'visitor') {
@@ -31,8 +32,7 @@ const changePassword = () => {
               {
                 current_password: oldPassword.value,
                 new_password: newPassword.value
-              },  {headers: {Authorization: getCookie("Authorization")
-            }
+              },  {headers: {Authorization: getCookie("Authorization")?? ""}
           }).then((res) => {
         if (res.data.status === 204) {
           alert(res.data.status)

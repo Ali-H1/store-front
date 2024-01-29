@@ -2,7 +2,11 @@
 import {ArrowBack, ArrowForward} from "@vicons/ionicons5";
 import {defineComponent} from "vue";
 
-defineProps<{ pic: Array<object> }>();
+type image = {
+  image: string
+};
+
+defineProps<{ pic: Array<image> }>();
 
 defineComponent({
   components: {
