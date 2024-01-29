@@ -18,6 +18,10 @@ export default createRouter({
             path: "/change_password",
             component: () => import(/* webpackChunkName: "home" */ "../views/ChangePassword.vue")
         },
+        {
+            path: "/remember_password",
+            component: () => import(/* webpackChunkName: "home" */ "../views/RememberPassword.vue")
+        },
         {path: "/cart", component: () => import(/* webpackChunkName: "home" */ "../views/Cart.vue")},
         {path: "/profile", component: () => import(/* webpackChunkName: "home" */ "../views/Profile.vue")},
         {path: "/order", component: () => import(/* webpackChunkName: "home" */ "../views/Order.vue")},

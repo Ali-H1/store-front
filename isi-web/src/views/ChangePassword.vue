@@ -131,9 +131,9 @@ const checkPassword = () => {
         </div>
 
         <div class="text-sm">
-          <a class="font-medium text-indigo-600 hover:text-indigo-500" href="#">
+          <span class="font-medium text-indigo-600 hover:text-indigo-500" @click="$router.push('/remember_password');" style="cursor: pointer;">
             Forgot your password?
-          </a>
+          </span>
         </div>
 
       </div>
