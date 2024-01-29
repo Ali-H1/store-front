@@ -8,7 +8,7 @@ WORKDIR /usr/src/app
 COPY isi-web/package*.json ./
 
 # Install project dependencies
-RUN npm install
+RUN npm install -f
 
 # Copy the rest of the application code to the container
 COPY isi-web .
