@@ -15,18 +15,6 @@ const userEmail = computed(() => {
 
 
 type ProductState = {
-  product :{
-    pid: string;
-    title: string;
-    price: number;
-    pdesc: string;
-    thumbnail: string;
-    pic: string;
-    quantity: number;
-  }
-};
-
-type ProductsState = {
     pid: string;
     title: string;
     price: number;
@@ -43,7 +31,7 @@ const accId = computed(() => {
 
 const subtotal = ref(0);
 
-const products = reactive([] as Array<ProductsState>);
+const products = reactive([] as Array<ProductState>);
 
 function getCookie(name) {
   const value = `; ${document.cookie}`;
@@ -73,9 +61,10 @@ if (localStorage.getItem("cart")){
   }
 }).then((res) => {
   const cartItems = res.data.results;
-  cartItems.forEach((cartItem: ProductState) => {
-    const pid = cartItem.product.pid;
-    const quantity = cartItem.product.quantity;
+  cartItems.forEach((cartItem) => {
+    const pid = cartItem.product.id;
+    const quantity = cartItem.quantity;
+    console.log(cartItem.product)
     const innerQuery =
     "http://" + config.apiServer + ":" + config.port + "/store/products/" + pid;
     axios.get(innerQuery).then((res) => {
