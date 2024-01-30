@@ -26,8 +26,9 @@ const login = () => {
     if (res.status === 200) {
       console.log(username.value + " login successfully")
       document.cookie = `Authorization=JWT ${res.data.access}; path=/`; 
+      console.log(res.data)
       store.commit('chgUser', {
-        accId: res.data.uuid,
+        accId: res.data.id,
         userEmail: username.value,
         userName: username.value.split('@')[0]
       })

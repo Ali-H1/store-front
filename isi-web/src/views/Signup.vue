@@ -72,7 +72,7 @@ const createAccount = () => {
             userName: lastname.value,
           })
           store.commit('chgStatus', 'active')
-          router.push('/address_list/create')
+          router.push('/')
         } else {
           alert([res.status,res.data])
         }

@@ -82,8 +82,8 @@ const addToCart = () => {
     router.push("/" + route.params.pid + "/login")
     return
   }
-  if (localStorage.getItem("cart")) {
-    const cartID = localStorage.getItem("cart");
+  if (localStorage.getItem("cart-"+store.state.userName)) {
+    const cartID = localStorage.getItem("cart-"+store.state.userName);
     addToAvalableCart(cartID)
     alert(cartID)
   } else {
@@ -97,11 +97,9 @@ const addToCart = () => {
       console.log(res)
       if (res.status === 201) {
         const cartID = res.data.id
-        localStorage.setItem("cart", cartID)
+        localStorage.setItem("cart-"+store.state.userName, cartID)
         addToAvalableCart(cartID)
-        alert(cartID)
       } else {
-        alert(res.data)
       }
     })
   }

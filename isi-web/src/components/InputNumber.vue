@@ -15,24 +15,39 @@ const accId = computed(() => {
 
 const props = defineProps<{ pid: string; quant: number }>();
 
-const handleChange = (v: number) => {
-  // console.log(`update:value(${v})`);
-  const query =
+const changeQuantity = (v: number) =>{
+  const cartID = localStorage.getItem("cart-"+store.state.userName);
+  console.log(props)
+    const query =
       "http://" +
       config.apiServer +
       ":" +
       config.port +
-      "/api/cart/update/" +
-      props.pid +
-      "/" +
-      accId.value +
-      "/" +
-      v;
-  // console.log(query);
-  axios.get(query);
-  location.reload(); // responsive alternative
-  // router.push("/cart/");
-}
+      "/store/carts/" + cartID + "/items/";
+    axios.post(query, { product_id: props.pid , quantity: v }).then(()=>{
+
+    location.reload(); // responsive alternative
+    })
+};
+
+// const handleChange = (v: number) => {
+//   // console.log(`update:value(${v})`);
+//   const query =
+//       "http://" +
+//       config.apiServer +
+//       ":" +
+//       config.port +
+//       "/api/cart/update/" +
+//       props.pid +
+//       "/" +
+//       accId.value +
+//       "/" +
+//       v;
+//   // console.log(query);
+//   axios.get(query);
+//   location.reload(); // responsive alternative
+//   // router.push("/cart/");
+// }
 </script>
 
 <template>
@@ -41,7 +56,7 @@ const handleChange = (v: number) => {
         min="1"
         size="small"
         v-model:value="quant"
-        @update:value="handleChange"
+        @update:value="changeQuantity"
     >
       <template #prefix>Qty</template>
     </n-input-number>

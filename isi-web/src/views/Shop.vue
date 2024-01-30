@@ -229,7 +229,7 @@ const selectBrand = (selBrand) => {
         <h2 v-if="userStatus !== 'vendor'" class="text-2xl grid grid-cols-2 font-medium text-gray-900">
           <span class="col-span-1"><span class="font-bold ">Open</span>Mall</span>
           <span class="col-span-1 text-gray-500 text-[19px] text-right">Hi, {{ userName }}</span>
-          <div class="text-sm col-span-2 text-gray-500">Online Shopping Mall Project for ISI</div>
+          <div class="text-sm col-span-2 text-gray-500">Online Shopping Project for Shahed</div>
         </h2>
         <div v-else class="">
           <router-link to="/manage">

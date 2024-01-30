@@ -240,14 +240,14 @@ axios.get(query).then((res) => {
                 Add Address
               </button>
             </router-link>
-            <router-link v-else to="address_list">
+            <!-- <router-link v-else to="address_list">
               <button
                   type="submit"
                   class="group relative w-full flex justify-center py-3 px-6 border border-transparent font-medium rounded-md rounded-t-none shadow-sm text-white bg-teal-600 hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-800"
               >
                 Select Primary Address
               </button>
-            </router-link>
+            </router-link> -->
           </div>
         </router-link>
       </div>

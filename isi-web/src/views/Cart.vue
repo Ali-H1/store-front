@@ -15,13 +15,13 @@ const userEmail = computed(() => {
 
 
 type ProductState = {
-    pid: string;
-    title: string;
-    price: number;
-    pdesc: string;
-    thumbnail: string;
-    pic: string;
-    quantity: number;
+  pid: string;
+  title: string;
+  price: number;
+  pdesc: string;
+  thumbnail: string;
+  pic: string;
+  quantity: number;
 };
 
 
@@ -38,6 +38,29 @@ function getCookie(name) {
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) return parts.pop()?.split(';').shift();
 }
+
+const removeItem = (product: ProductState) => {
+  const cartID = localStorage.getItem("cart-"+store.state.userName);
+  const query =
+    "http://" +
+    config.apiServer +
+    ":" +
+    config.port +
+    "/store/carts/" + cartID + "/items/";
+  axios.post(query, { product_id: product.pid, quantity: product.quantity }).then((res) => {
+    const query =
+      "http://" +
+      config.apiServer +
+      ":" +
+      config.port +
+      "/store/carts/" + cartID + "/items/"+res.data.id;
+    axios.delete(query).then((res) => {
+      console.log(res.status)
+      location.reload()
+    })
+  })
+};
+
 /*const query_token =
     "http://" + config.apiServer + ":" + config.port + "/api/current_user";
   axios.get(query_token,{headers:{'Authorization':"Bearer " + localStorage.getItem('Authorization')}}).then((res) => {
@@ -51,38 +74,38 @@ function getCookie(name) {
         store.commit('chgStatus', 'active')
       }
   });*/
-if (localStorage.getItem("cart")){
-  const cartID = localStorage.getItem("cart");
+if (localStorage.getItem("cart-"+store.state.userName)) {
+  const cartID = localStorage.getItem("cart-"+store.state.userName);
   const query =
-  "http://" + config.apiServer + ":" + config.port + "/store/carts/"+cartID+"/items/";
+    "http://" + config.apiServer + ":" + config.port + "/store/carts/" + cartID + "/items/";
   axios.get(query, {
-  headers: {
-    Authorization: getCookie("Authorization")??"" //the token is a variable which holds the token
-  }
-}).then((res) => {
-  const cartItems = res.data.results;
-  cartItems.forEach((cartItem) => {
-    const pid = cartItem.product.id;
-    const quantity = cartItem.quantity;
-    console.log(cartItem.product)
-    const innerQuery =
-    "http://" + config.apiServer + ":" + config.port + "/store/products/" + pid;
-    axios.get(innerQuery).then((res) => {
-      const img = res.data.images[0].image;
-      const product = {
-        pid: cartItem.product.pid,
-        title: cartItem.product.title,
-        price: cartItem.product.price,
-        pdesc: res.data.pdesc,
-        thumbnail: img,
-        pic: img,
-        quantity: quantity,
-      };
-      subtotal.value += Number((Math.floor(product.price/product.quantity) * product.quantity).toPrecision(2));
-      products.push(product);
+    headers: {
+      Authorization: getCookie("Authorization") ?? "" //the token is a variable which holds the token
+    }
+  }).then((res) => {
+    const cartItems = res.data.results;
+    cartItems.forEach((cartItem) => {
+      const pid = cartItem.product.id;
+      const quantity = cartItem.quantity;
+      console.log(cartItem.product)
+      const innerQuery =
+        "http://" + config.apiServer + ":" + config.port + "/store/products/" + pid;
+      axios.get(innerQuery).then((res) => {
+        const img = res.data?.images[0]?.image;
+        const product = {
+          pid: cartItem.product.id,
+          title: cartItem.product.title,
+          price: cartItem.product.price,
+          pdesc: res.data.pdesc,
+          thumbnail: img,
+          pic: img,
+          quantity: quantity,
+        };
+        subtotal.value += Number((product.price * product.quantity).toPrecision(3));
+        products.push(product);
+      });
     });
   });
-});
 }
 
 const sortedProducts = products.sort((a, b) => {
@@ -95,19 +118,6 @@ const sortedProducts = products.sort((a, b) => {
   return 0;
 });
 
-const removeProduct = (pid: string) => {
-  const query =
-    "http://" +
-    config.apiServer +
-    ":" +
-    config.port +
-    "/api/cart/del/" +
-    pid +
-    "/" +
-    accId.value;
-  axios.get(query);
-  location.reload()
-};
 </script>
 
 <template>
@@ -148,7 +158,7 @@ const removeProduct = (pid: string) => {
                             {{ product.title }}
                           </router-link>
                         </h3>
-                        <p class="ml-4">${{ product.price }}</p>
+                        <p class="ml-4">${{ Number((product.price * product.quantity).toPrecision(3)) }}</p>
                       </div>
                     </div>
                     <div class="flex-1 flex items-end justify-between text-sm">
@@ -158,7 +168,7 @@ const removeProduct = (pid: string) => {
 
                       <div class="flex">
                         <button type="button" class="font-medium text-indigo-600 hover:text-indigo-500"
-                          @click="removeProduct(product.pid)">
+                          @click="removeItem(product)">
                           Remove
                         </button>
                       </div>

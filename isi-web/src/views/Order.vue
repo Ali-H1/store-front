@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import {computed, reactive, ref} from "vue";
-import {useStore} from "vuex";
+import { computed, reactive, ref } from "vue";
+import { useStore } from "vuex";
 import axios from "axios";
 import config from "../config";
-import {useRouter} from "vue-router";
+import { useRouter } from "vue-router";
 
 const store = useStore();
 const router = useRouter();
@@ -43,8 +43,10 @@ type AliasState = {
 }
 
 type PurchaseState = {
+  id: number;
+  payment_status: string;
   amount: number;
-  date: Date;
+  placed_at: Date;
   pono: string;
   status: string;
   name: string;
@@ -61,26 +63,30 @@ const accId = computed(() => {
 const userType = computed(() => {
   return store.state.userStatus;
 });
-
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift();
+}
 const getOrders = () => {
   let query;
   if (userType.value === 'active') {
-    query = "http://" + config.apiServer + ":" + config.port + "/api/order/" + accId.value;
-  } else if (userType.value === 'vendor') {
-    query = "http://" + config.apiServer + ":" + config.port + "/api/order/all";
+    query = "http://" + config.apiServer + ":" + config.port + "/store/orders/";
   } else {
     query = ""
   }
   axios
-      .get(query)
-      .then((res) => {
-        const productList = res.data.purchase_list;
-        console.log(productList);
-        productList.forEach((product: PurchaseState) => {
-          purchases.push(product as PurchaseState);
-        });
-      })
-      .catch((error) => console.log(error));
+    .get(query, {
+      headers: { Authorization: getCookie("Authorization") ?? "" }
+    })
+    .then((res) => {
+      const productList = res.data.results;
+      console.log(productList);
+      productList.forEach((product) => {
+        purchases.push(product);
+      });
+    })
+    .catch((error) => console.log(error));
 };
 
 const userName = computed(() => {
@@ -134,18 +140,16 @@ const selectUser = () => {
         <div class="bg-white rounded-lg my-6 px-5 shadow-xl border py-2">
           <div v-if="userType === 'vendor'" class="my-3">
             <input type="text" @blur="selectUser" v-model="selectName" placeholder="Name"
-                   class="text-sm p-3 w-full h-10 border rounded-lg bg-slate-50">
+              class="text-sm p-3 w-full h-10 border rounded-lg bg-slate-50">
           </div>
           <div class="my-3">
-            <select
-                v-model="selectStatus"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            >
+            <select v-model="selectStatus"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
               <option>All Status</option>
               <option v-if="userType === 'vendor'" value="pending">Pending</option>
               <option value="past">Past Orders</option>
-<!--              <option value="shipped">Shipped</option>-->
-<!--              <option value="cancelled">Cancelled</option>-->
+              <!--              <option value="shipped">Shipped</option>-->
+              <!--              <option value="cancelled">Cancelled</option>-->
               <option v-if="userType === 'vendor'" value="hold">On Hold</option>
               <option v-if="userType === 'active'" value="current">Current</option>
             </select>
@@ -165,18 +169,18 @@ const selectUser = () => {
             </div> -->
 
             <div
-                v-if="(selectName === '' || selectName === purchase.name) && (selectStatus === 'All Status' || selectStatus === purchase.status || selectStatus === 'past' && (purchase.status === 'cancelled' || purchase.status === 'shipped') || selectStatus === 'current' && (purchase.status === 'pending' || purchase.status === 'hold'))"
-                class="py-6 ml-4 flex-1 flex flex-col">
+              v-if="(selectName === '' || selectName === (purchase.id).toString()) && (selectStatus === 'All Status' || selectStatus === purchase.payment_status || selectStatus === 'past' && (purchase.status === 'cancelled' || purchase.status === 'shipped') || selectStatus === 'current' && (purchase.status === 'pending' || purchase.status === 'hold'))"
+              class="py-6 ml-4 flex-1 flex flex-col">
               <div>
                 <h3 class="text-orange-600 text-md" v-if="userType === 'vendor'">
-                  <div class="font-bold">{{ purchase.name }}</div>
+                  <div class="font-bold">{{ purchase.id }}</div>
                   <div>{{ purchase.tel }}</div>
                 </h3>
                 <div class="flex justify-between text-base font-medium text-gray-900">
                   <h3>
-                    <a> Created at: {{ purchase.date }}</a>
+                    <a> Created at: {{ purchase.placed_at }}</a>
                   </h3>
-                  <p class="ml-4 text-right">HK$&nbsp;{{ purchase.amount }}</p>
+                  <p class="ml-4 text-right">$&nbsp;{{ purchase.amount }}</p>
                 </div>
                 <p class="mt-1 text-sm text-gray-500">Status: {{ purchase.status }}</p>
               </div>
@@ -187,11 +191,8 @@ const selectUser = () => {
                 </button>
 
                 <div class="flex">
-                  <button
-                      type="button"
-                      class="font-medium text-indigo-600 hover:text-indigo-500"
-                      @click="$router.push('/order/' + purchase.pono)"
-                  >
+                  <button type="button" class="font-medium text-indigo-600 hover:text-indigo-500"
+                    @click="$router.push('/order/' + purchase.pono)">
                     Detailed
                   </button>
                 </div>
