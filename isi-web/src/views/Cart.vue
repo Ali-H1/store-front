@@ -15,14 +15,27 @@ const userEmail = computed(() => {
 
 
 type ProductState = {
-  pid: string;
-  title: string;
-  price: number;
-  pdesc: string;
-  thumbnail: string;
-  pic: string;
-  quantity: number;
+  product :{
+    pid: string;
+    title: string;
+    price: number;
+    pdesc: string;
+    thumbnail: string;
+    pic: string;
+    quantity: number;
+  }
 };
+
+type ProductsState = {
+    pid: string;
+    title: string;
+    price: number;
+    pdesc: string;
+    thumbnail: string;
+    pic: string;
+    quantity: number;
+};
+
 
 const accId = computed(() => {
   return store.state.accId;
@@ -30,7 +43,7 @@ const accId = computed(() => {
 
 const subtotal = ref(0);
 
-const products = reactive([] as Array<ProductState>);
+const products = reactive([] as Array<ProductsState>);
 
 function getCookie(name) {
   const value = `; ${document.cookie}`;
@@ -59,18 +72,18 @@ if (localStorage.getItem("cart")){
     Authorization: getCookie("Authorization")??"" //the token is a variable which holds the token
   }
 }).then((res) => {
-  const cartItems = res.data.results.product;
+  const cartItems = res.data.results;
   cartItems.forEach((cartItem: ProductState) => {
-    const pid = cartItem.pid;
-    const quantity = cartItem.quantity;
+    const pid = cartItem.product.pid;
+    const quantity = cartItem.product.quantity;
     const innerQuery =
     "http://" + config.apiServer + ":" + config.port + "/store/products/" + pid;
     axios.get(innerQuery).then((res) => {
       const img = res.data.images[0].image;
       const product = {
-        pid: cartItem.pid,
-        title: cartItem.title,
-        price: cartItem.price,
+        pid: cartItem.product.pid,
+        title: cartItem.product.title,
+        price: cartItem.product.price,
         pdesc: res.data.pdesc,
         thumbnail: img,
         pic: img,
